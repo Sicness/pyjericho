@@ -7,6 +7,7 @@ from time import sleep
 
 QUEUE_PORT = 5001
 SOCK_PORT = 10002
+REP_PORT = 6001
 
 context = zmq.Context()
 sub = context.socket(zmq.SUB)
@@ -18,22 +19,35 @@ def send_test_sock():
     s.close()
 
 
+def send_test_zmq():
+    socket = context.socket(zmq.REQ)
+    socket.connect("tcp://127.0.0.1:%i" % (REP_PORT))
+    sleep(0.2)
+    socket.send("msg zmq test message")
+
+
 print("Hello, let's get started")
 print("Run gate.py in tests mode")
 
 gate_proc = subprocess.Popen(('./gate.py', '--tests'))
 print("Waiting 2 secs for gate.py start")
 sleep(2)
+sub.connect("tcp://127.0.0.1:%i" % (QUEUE_PORT))
 
 
 class Test(unittest.TestCase):
     def test_sock2queue(self):
         sock_thr = Thread(target = send_test_sock, args = ())
-        sub.connect("tcp://127.0.0.1:%i" % (QUEUE_PORT))
         sub.setsockopt(zmq.SUBSCRIBE,"")
         sock_thr.start()
         #print sub.recv()
         self.assertEqual(sub.recv(),"test message")
+
+    def test_zmq2queue(self):
+        sock_thr = Thread(target = send_test_zmq, args = ())
+        sock_thr.start()
+        self.assertEqual(sub.recv(), "zmq test message")
+
 
 if __name__ == "__main__":
         unittest.main()
