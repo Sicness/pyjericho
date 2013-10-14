@@ -1,5 +1,4 @@
 import unittest
-import subprocess
 import zmq
 import socket
 from threading import Thread
@@ -27,11 +26,7 @@ def send_test_zmq():
 
 
 print("Hello, let's get started")
-print("Run gate.py in tests mode")
 
-gate_proc = subprocess.Popen(('./gate.py', '--tests'))
-print("Waiting 2 secs for gate.py start")
-sleep(2)
 sub.connect("tcp://127.0.0.1:%i" % (QUEUE_PORT))
 
 
@@ -41,12 +36,12 @@ class Test(unittest.TestCase):
         sub.setsockopt(zmq.SUBSCRIBE,"")
         sock_thr.start()
         #print sub.recv()
-        self.assertEqual(sub.recv(),"test message")
+        self.assertEqual(sub.recv(),"msg test message")
 
     def test_zmq2queue(self):
         sock_thr = Thread(target = send_test_zmq, args = ())
         sock_thr.start()
-        self.assertEqual(sub.recv(), "zmq test message")
+        self.assertEqual(sub.recv(), "msg zmq test message")
 
 
 if __name__ == "__main__":

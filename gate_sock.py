@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+
 import zmq
 import argparse
 from threading import Thread
@@ -46,5 +47,6 @@ while True:
         req.send(data)
     except zmq.error.ZMQError as e:
         print("ERROR: can't send to queue: %s" % (e))
-    print(req.recv())
+    # TODO: Dispatch replay
+    req.recv()
     s.close()

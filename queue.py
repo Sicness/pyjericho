@@ -6,6 +6,7 @@ import argparse
 QUEUE_PORT=5000
 REP_PORT=6000
 
+__debug = False
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--debug', help='enable debug mode', action='store_true')
@@ -33,7 +34,6 @@ while True:
     if __debug:
         print("DEBUG: recieved: %s" % (data))
     if data[:4] == 'msg ':
-        print("DEBUG: zmq recv msg type. Send it to the queue")
         if __debug:
             print("DEBUG: send(%s)" % (data))
         queue.send(data)
