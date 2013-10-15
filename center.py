@@ -30,7 +30,7 @@ ultra = Ultra()
 context = zmq.Context()
 sub = context.socket(zmq.SUB)
 sub.connect("tcp://127.0.0.1:%i" % (QUEUE_PORT))
-sub.setsockopt(zmq.SUBSCRIBE,"msg")
+sub.setsockopt(zmq.SUBSCRIBE,"")
 
 def signal_handler(signal, frame):
         sys.exit(0)
@@ -68,9 +68,18 @@ def dispatch_msg(data):
         if args[1] == 'radio':
             debug_print("run ultra")
             ultra.switch()
-        if args[1] == 'IR':
-            if args[2] in IR_codes:
-                IR_codes[args[2]]()
+    except Exception  as e:
+        print "ERROR: on parse msg: %\n%s" % (data, e)
+
+def dispatch_pub(data):
+    try:
+        args = data.split(' ')
+        if args[0] == 'temp':
+            debug_print(args)
+            ultra.switch()
+        if args[0] == 'IR':
+            if args[1] in IR_codes:
+                IR_codes[args[1]]()
     except Exception  as e:
         print "ERROR: on parse msg: %\n%s" % (data, e)
 
@@ -80,5 +89,8 @@ while True:
         debug_print("Recieved: %s" % (data))
         if data.split(' ')[0] == 'msg':
             dispatch_msg(data)
+        else:
+            dispatch_pub(data)
     except KeyboardInterrupt:
                 signal_handler("KeyboardInterrupt", "")
+

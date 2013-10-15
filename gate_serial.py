@@ -103,7 +103,11 @@ while True:
     try:
         data = ard.read()
         debug_print("Arduino read: %s" % (data))
-        req.send('msg %s' % (data))
-        req.recv()
+        if data.split(' ')[0] == 'IR':
+            req.send('%s' % (data))
+            req.recv()
+        else:
+            req.send('msg %s' % (data))
+            req.recv()
     except KeyboardInterrupt:
             signal_handler("KeyboardInterrupt", "")
