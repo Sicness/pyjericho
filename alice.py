@@ -10,6 +10,7 @@ from time import sleep
 import sys
 
 __debug = False
+QUEUE_PORT = 5000
 
 def debug_print(text):
     if __debug:
@@ -32,7 +33,6 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
-QUEUE_PORT = 5000
 user_agent = ("Mozilla/5.0 (Windows NT 6.1; WOW64) "
               "AppleWebKit/537.17 "
               "(KHTML, like Gecko) Chrome/24.0.1312.60 Safari/537.17")
