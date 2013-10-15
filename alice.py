@@ -4,6 +4,10 @@
 import zmq
 import mplayer
 import argparse
+import signal
+import urllib
+from time import sleep
+import sys
 
 __debug = False
 
@@ -21,6 +25,12 @@ if args.debug:                  # --debug
 if args.tests:                  # --tests
     QUEUE_PORT=5001
     debug_print("DEBUG: Queue port is changed on %i" % (QUEUE_PORT))
+
+def signal_handler(signal, frame):
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
 
 QUEUE_PORT = 5000
 user_agent = ("Mozilla/5.0 (Windows NT 6.1; WOW64) "
@@ -45,6 +55,7 @@ while True:
     try:
         data = sub.recv()
         debug_print("Recieved: %s" % (data))
-        say(data.split(' ')[1:])
+        say(' '.join(data.split(' ')[1:]))
+        sleep(0.3)
     except KeyboardInterrupt:
-                signal_handler("KeyboardInterrupt", "")
+            signal_handler("KeyboardInterrupt", "")
