@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "*** Run instanses ***"
-python ./queue.py --test &
+python ./pipeline.py --test &
 python ./gate_sock.py --tests &
 echo "*** Wait for instanses execution ***"
 sleep 1
