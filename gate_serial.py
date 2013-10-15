@@ -80,6 +80,8 @@ class Arduino:
         while True:
             try:
                 line = self.s.readline()
+                if not line:
+                    continue
             except serial.SerialException:
                 debug_print("Can't read from serial: %s" % sys.exc_info()[0])
                 self.connect()
