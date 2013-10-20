@@ -26,8 +26,8 @@ if args.debug:                  # --debug
     __debug = True
 if args.tests:                  # --tests
     QUEUE_PORT=5001
-    debug_print("DEBUG: Queue port is changed on %i" % (QUEUE_PORT))
-    REP_PORT=6001
+   # debug_print("DEBUG: No need to set --test for gate_serial")
+    #REP_PORT=6001
     debug_print("DEBUG: Zmq replay port is changed on %i" % (REP_PORT))
 
 def signal_handler(signal, frame):
@@ -42,6 +42,7 @@ sub.connect("tcp://127.0.0.1:%i" % (QUEUE_PORT))
 sub.setsockopt(zmq.SUBSCRIBE,"ard")
 req = context.socket(zmq.REQ)
 req.connect("tcp://127.0.0.1:%i" % (REP_PORT))
+req.connect("tcp://127.0.0.1:%i" % (REP_PORT + 1))
 
 class Arduino:
     def __init__(self, adr, onFound = None, onLost = None, baudrate = 9600):

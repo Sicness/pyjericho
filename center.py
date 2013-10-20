@@ -5,6 +5,9 @@ import sys
 import zmq
 import signal
 import argparse
+import traceback
+
+import objects
 
 from sound import Ultra
 
@@ -38,6 +41,14 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
+light_hole = objects.NooLight(0, auto=True, sn=1)
+
+def on_motion(where, state):
+    debug_print("Applicate motion in %s" % (where))
+    if where == 'hole':
+        light_hole.motion_triger(state)
+
+
 IR_codes = dict()
 def init_IR_codes():
     """ Bind functions on IR codes """
@@ -68,8 +79,12 @@ def dispatch_msg(data):
         if args[1] == 'radio':
             debug_print("run ultra")
             ultra.switch()
+        # msg Motion in room YES
+        if args[1] == 'Motion' and args[2] == 'in':
+            on_motion(args[3], 1 if args[4] == 'YES' else 0)
     except Exception  as e:
-        print "ERROR: on parse msg: %\n%s" % (data, e)
+        print "ERROR: on parse msg: %s | %s" % (data, e)
+        traceback.print_exc(file=sys.stdout)
 
 def dispatch_pub(data):
     try:
