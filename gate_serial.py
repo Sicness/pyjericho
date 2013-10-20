@@ -64,7 +64,7 @@ class Arduino:
                 elif self._connected == None:
                     debug_print("Can't open seril port %s:%s %s" % (self.adr, self.baudrate, sys.exc_info()[0]))
                 self._connected = False
-                time.sleep(5)
+                sleep(5)
                 continue
 
             # Success conntect to serial
