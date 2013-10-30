@@ -44,18 +44,21 @@ signal.signal(signal.SIGTERM, signal_handler)
 light_hole = objects.NooLight(0, auto=False, sn=1)
 
 def on_motion(where, state):
-    debug_print("Applicate motion in %s" % (where))
+    debug_print("Applicated motion in %s" % (where))
     if where == 'hole':
         light_hole.motion_triger(state)
 
 def noolite_hole_set_auto():
+    debug_print("Enable auto mode for Light in hole")
     light_hole.set_auto(True)
 
 def noolite_hole_set_on():
+    debug_print("Disble auto mode for Light in hole and light ON")
     light_hole.set_auto(False)
     light_hole.on()
 
 def noolite_hole_set_off():
+    debug_print("Disble auto mode for Light in hole and light OFF")
     light_hole.set_auto(False)
     light_hole.off()
 

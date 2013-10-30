@@ -18,12 +18,18 @@ class NooLight:
         self._noolite.set(self.ch)
 
     def set_auto(self, auto):
-        if not isinstance(mode, bool):
+        if not isinstance(auto, bool):
             print "WARRING: noolite set_auto should take bool! exit"
             return
         self.auto = auto
+        if auto:
+            if self.state:
+                self.on()
+            else:
+                self.off()
 
     def motion_triger(self, state):
+        self.state = state
         if self.auto:
             if state:
                 self.on()
