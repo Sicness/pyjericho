@@ -12,6 +12,7 @@ import objects
 from sound import Ultra
 
 QUEUE_PORT = 5000
+REP_PORT=6000
 __debug = False
 
 def debug_print(text):
@@ -28,12 +29,16 @@ if args.debug:                  # --debug
 if args.tests:                  # --tests
     QUEUE_PORT=5001
     debug_print("DEBUG: Queue port is changed on %i" % (QUEUE_PORT))
+    REP_PORT=6001
+    debug_print("DEBUG: Zmq replay port is changed on %i" % (REP_PORT))
 
 ultra = Ultra()
 context = zmq.Context()
 sub = context.socket(zmq.SUB)
 sub.connect("tcp://127.0.0.1:%i" % (QUEUE_PORT))
 sub.setsockopt(zmq.SUBSCRIBE,"")
+req = context.socket(zmq.REQ)
+req.connect("tcp://127.0.0.1:%i" % (REP_PORT))
 
 def signal_handler(signal, frame):
         sys.exit(0)
@@ -42,6 +47,11 @@ signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
 light_hole = objects.NooLight(0, auto=False, sn=1)
+temp = 1.10
+
+def say(text):
+    req.send(b"say %s" % (text))
+    req.recv()
 
 def on_motion(where, state):
     debug_print("Applicated motion in %s" % (where))
@@ -62,10 +72,14 @@ def noolite_hole_set_off():
     light_hole.set_auto(False)
     light_hole.off()
 
+
+def say_temp():
+    say("Температура дома %f" % (temp))
+
 IR_codes = dict()
 def init_IR_codes():
     """ Bind functions on IR codes """
-    #IR_codes.update( {b'FF629D' : say_temp} )     # Say temperature status
+    IR_codes.update( {b'FF629D' : say_temp} )     # Say temperature status
     #IR_codes.update( {b'FFA857' : volume_inc} )   # increase volume
     #IR_codes.update( {b'FFE01F' : volume_dec} )   # reduce volume
     #IR_codes.update( {b'FF906F' : toSecureMode} )       # Will be noBodyHome
@@ -100,11 +114,15 @@ def dispatch_msg(data):
         traceback.print_exc(file=sys.stdout)
 
 def dispatch_pub(data):
+    global temp
     try:
         args = data.split(' ')
         if args[0] == 'temp':
             debug_print(args)
-            ultra.switch()
+            try:
+                temp = float(args[2])
+            except:
+                print "WARNING: temp from ds18s20 must be float"
         if args[0] == 'IR':
             if args[1] in IR_codes:
                 IR_codes[args[1]]()
