@@ -53,11 +53,11 @@ def noolite_hole_set_auto():
 
 def noolite_hole_set_on():
     light_hole.set_auto(False)
-    light_hole.set(1)
+    light_hole.on()
 
 def noolite_hole_set_off():
     light_hole.set_auto(False)
-    light_hole.set(0)
+    light_hole.off()
 
 IR_codes = dict()
 def init_IR_codes():
@@ -106,7 +106,7 @@ def dispatch_pub(data):
             if args[1] in IR_codes:
                 IR_codes[args[1]]()
     except Exception  as e:
-        print "ERROR: on parse msg: %\n%s" % (data, e)
+        print "ERROR: on parse msg: %s\n%s" % (data, e)
 
 while True:
     try:
