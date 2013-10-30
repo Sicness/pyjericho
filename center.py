@@ -41,13 +41,23 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
-light_hole = objects.NooLight(0, auto=True, sn=1)
+light_hole = objects.NooLight(0, auto=False, sn=1)
 
 def on_motion(where, state):
     debug_print("Applicate motion in %s" % (where))
     if where == 'hole':
         light_hole.motion_triger(state)
 
+def noolite_hole_set_auto():
+    light_hole.set_auto(True)
+
+def noolite_hole_set_on():
+    light_hole.set_auto(False)
+    light_hole.set(1)
+
+def noolite_hole_set_off():
+    light_hole.set_auto(False)
+    light_hole.set(0)
 
 IR_codes = dict()
 def init_IR_codes():
@@ -61,15 +71,15 @@ def init_IR_codes():
     #IR_codes.update( {b'8BE68656' : holeNightLightAuto} )
     #IR_codes.update( {b'B21F28AE' : hole_night_light.setManualStateOff} )
     #IR_codes.update( {b'A6B1096A' : hole_night_light.setManualStateOn} )
-    #IR_codes.update( {b'24014B0' : holeLightAuto} )
-    #IR_codes.update( {b'8FC212DB' : hole_light.setManualStateOff} )
-    #IR_codes.update( {b'7960556F' : hole_light.setManualStateOn} )
+    IR_codes.update( {b'24014B0' : noolite_hole_set_auto} )
+    IR_codes.update( {b'8FC212DB' : noolite_hole_set_off} )
+    IR_codes.update( {b'7960556F' : noolite_hole_set_on} )
     #IR_codes.update( {b'FF10EF' : holeNightLightAuto} )
     #IR_codes.update( {b'FF38C7' : hole_night_light.setManualStateOff} )
     #IR_codes.update( {b'FF5AA5' : hole_night_light.setManualStateOn} )
-    #IR_codes.update( {b'FF30CF' : holeLightAuto} )
-    #IR_codes.update( {b'FF18E7' : hole_light.setManualStateOff} )
-    #IR_codes.update( {b'FF7A85' : hole_light.setManualStateOn} )
+    IR_codes.update( {b'FF30CF' : noolite_hole_set_auto} )
+    IR_codes.update( {b'FF18E7' : noolite_hole_set_off} )
+    IR_codes.update( {b'FF7A85' : noolite_hole_set_on} )
 
 init_IR_codes()
 
