@@ -42,7 +42,6 @@ sub.connect("tcp://127.0.0.1:%i" % (QUEUE_PORT))
 sub.setsockopt(zmq.SUBSCRIBE,"ard")
 req = context.socket(zmq.REQ)
 req.connect("tcp://127.0.0.1:%i" % (REP_PORT))
-req.connect("tcp://127.0.0.1:%i" % (REP_PORT + 1))
 
 class Arduino:
     def __init__(self, adr, onFound = None, onLost = None, baudrate = 9600):
@@ -102,6 +101,7 @@ ard = Arduino('/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A80090sP-if00-port0',
               onFound=onArdFound, onLost=onArdLost)
 while True:
     try:
+        debug_print("Arduino reading...")
         data = ard.read()
         debug_print("Arduino read: %s" % (data))
         if data.split(' ')[0] == 'IR':
