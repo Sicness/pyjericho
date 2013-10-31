@@ -32,6 +32,7 @@ if args.tests:                  # --tests
     REP_PORT=6001
     debug_print("DEBUG: Zmq replay port is changed on %i" % (REP_PORT))
 
+glob = dict()
 ultra = Ultra()
 context = zmq.Context()
 sub = context.socket(zmq.SUB)
@@ -47,7 +48,6 @@ signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
 light_hole = objects.NooLight(0, auto=False, sn=1)
-temp = 1.10
 
 def say(text):
     req.send(b"say %s" % (text))
@@ -74,7 +74,9 @@ def noolite_hole_set_off():
 
 
 def say_temp():
-    say("Температура дома %f" % (temp))
+    debug_print("Gonna say hole_ds_18b20")
+    if 'hole_ds18b20' in glob:
+        say("Температура дома %f" % (glob['hole_ds18b20']))
 
 IR_codes = dict()
 def init_IR_codes():
@@ -117,12 +119,12 @@ def dispatch_pub(data):
     global temp
     try:
         args = data.split(' ')
-        if args[0] == 'temp':
-            debug_print(args)
+        if args[0] == 'temp' and args[1] == 'ds18b20':
+            debug_print("found a value for hole_ds18b20")
             try:
-                temp = float(args[2])
+                glob['hole_ds18b20'] = round(float(args[2]), 1)
             except:
-                print "WARNING: temp from ds18s20 must be float"
+                print "WARNING: temp ds18b20 _float_"
         if args[0] == 'IR':
             if args[1] in IR_codes:
                 IR_codes[args[1]]()
