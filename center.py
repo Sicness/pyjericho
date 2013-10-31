@@ -122,7 +122,7 @@ def dispatch_pub(data):
         if args[0] == 'temp' and args[1] == 'ds18b20':
             debug_print("found a value for hole_ds18b20")
             try:
-                glob['hole_ds18b20'] = round(float(args[2]), 1)
+                glob['hole_ds18b20'] = "%.1f" % (float(args[2]))
             except:
                 print "WARNING: temp ds18b20 _float_"
         if args[0] == 'IR':
