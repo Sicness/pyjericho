@@ -41,8 +41,10 @@ context = zmq.Context()
 sub = context.socket(zmq.SUB)
 sub.connect("tcp://127.0.0.1:%i" % (QUEUE_PORT))
 sub.setsockopt(zmq.SUBSCRIBE,"cron set")
+sub.setsockopt(zmq.SUBSCRIBE,"cron add")
 sub.setsockopt(zmq.SUBSCRIBE,"cron list")
 sub.setsockopt(zmq.SUBSCRIBE,"cron rm")
+sub.setsockopt(zmq.SUBSCRIBE,"cron del")
 poller = zmq.Poller()
 poller.register(sub, zmq.POLLIN)
 req = context.socket(zmq.REQ)
@@ -65,7 +67,7 @@ while True:
             debug_print("Recieved: %s" % (data))
             args = data.split(' ')
             cmd = args[1]
-            if cmd == 'set':
+            if cmd == 'set' or cmd == 'add':
                 when, name = datetime.fromtimestamp(float(args[2])), args[3]
                 debug_print("add task %s AT %s" % (name, when))
                 tasks[name] = when
@@ -82,7 +84,7 @@ while True:
             rm_list = list()            # tasks for deletion
             for name, when in tasks.iteritems():
                 if now > when:
-                    send('env', name)   # Task happaned
+                    send('event', name)   # Task happaned
                     # mark the task as must be deleted
                     rm_list.append(name)
             for task in rm_list:

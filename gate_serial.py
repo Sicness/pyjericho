@@ -26,8 +26,8 @@ if args.debug:                  # --debug
     __debug = True
 if args.tests:                  # --tests
     QUEUE_PORT=5001
-   # debug_print("DEBUG: No need to set --test for gate_serial")
-    #REP_PORT=6001
+    debug_print("DEBUG: No need to set --test for gate_serial")
+    REP_PORT=6001
     debug_print("DEBUG: Zmq replay port is changed on %i" % (REP_PORT))
 
 def signal_handler(signal, frame):

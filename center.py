@@ -1,11 +1,13 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-import sys
 import zmq
 import signal
 import argparse
 import traceback
+import time
+from datetime import datetime, timedelta
+import sys, traceback
 
 import objects
 
@@ -49,6 +51,23 @@ signal.signal(signal.SIGTERM, signal_handler)
 
 light_hole = objects.NooLight(0, auto=False, sn=1)
 
+def now():
+    return datetime.now()
+
+def nowStr(time=None):
+    """ now -> str
+    time is datedate.datetime.now.time() """
+    if time is None:
+        time = datetime.now().time()
+    if time.minute < 10:
+        return time.strftime("%H ноль %m")
+    else:
+        return time.strftime("%H %M")
+
+def send(text):
+    req.send(text)
+    req.recv()
+
 def say(text):
     req.send(b"say %s" % (text))
     req.recv()
@@ -57,6 +76,9 @@ def on_motion(where, state):
     debug_print("Applicated motion in %s" % (where))
     if where == 'hole':
         light_hole.motion_triger(state)
+        if 'secureMode' in glob and glob['secureMode']:
+            glob['secureMode'] = False
+            wellcomeHome()
 
 def noolite_hole_set_auto():
     debug_print("Enable auto mode for Light in hole")
@@ -72,11 +94,30 @@ def noolite_hole_set_off():
     light_hole.set_auto(False)
     light_hole.off()
 
+def cronAdd(name, when):
+    debug_print("set to cron %s AT %s" % (name, when))
+    send(" ".join(["cron add", str(time.mktime(when.timetuple())), name]))
 
 def say_temp():
     debug_print("Gonna say hole_ds_18b20")
     if 'hole_ds18b20' in glob:
         say("Температура дома %f" % (glob['hole_ds18b20']))
+
+
+def toSecureMode():
+    cronAdd('toSecureMode', now() + timedelta(seconds=30))
+    say('Сторожевой режим будет включен через одну минуту. Приятного время препровождения!')
+
+def secureMode():
+    glob['secureMode'] = True
+    debug_print("Secure mode is enabled")
+
+def wellcomeHome():
+    say("Добро пожаловать домой.")
+    say("Текущее время " + nowStr())
+    say_temp()
+
+
 
 IR_codes = dict()
 def init_IR_codes():
@@ -84,7 +125,7 @@ def init_IR_codes():
     IR_codes.update( {b'FF629D' : say_temp} )     # Say temperature status
     #IR_codes.update( {b'FFA857' : volume_inc} )   # increase volume
     #IR_codes.update( {b'FFE01F' : volume_dec} )   # reduce volume
-    #IR_codes.update( {b'FF906F' : toSecureMode} )       # Will be noBodyHome
+    IR_codes.update( {b'FF906F' : toSecureMode} )       # Will be noBodyHome
     IR_codes.update( {b'FFC23D' : ultra.switch} )       # On/off radio
     IR_codes.update( {b'BF09C35C' : ultra.switch} )     # On/off radio (big)
     #IR_codes.update( {b'8BE68656' : holeNightLightAuto} )
@@ -125,10 +166,18 @@ def dispatch_pub(data):
                 glob['hole_ds18b20'] = "%.1f" % (float(args[2]))
             except:
                 print "WARNING: temp ds18b20 _float_"
-        if args[0] == 'IR':
+
+        elif args[0] == 'IR':
             if args[1] in IR_codes:
                 IR_codes[args[1]]()
+
+        elif args[0] == 'cron' and args[1] == 'event':
+            env = args[2]
+            debug_print("Cron event " + env)
+            if env == 'toSecureMode':
+                secureMode()
     except Exception  as e:
+        traceback.print_exc(file=sys.stderr)
         print "ERROR: on parse msg: %s\n%s" % (data, e)
 
 while True:
