@@ -105,7 +105,7 @@ def say_temp():
 
 
 def toSecureMode():
-    cronAdd('toSecureMode', now() + timedelta(seconds=30))
+    cronAdd('toSecureMode', now() + timedelta(minutes=1))
     say('Сторожевой режим будет включен через одну минуту. Приятного время препровождения!')
 
 def secureMode():
