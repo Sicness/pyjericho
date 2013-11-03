@@ -49,7 +49,11 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
-light_hole = objects.NooLight(0, auto=False, sn=1)
+
+lights = dict()
+lights['hole'] = objects.NooLight(0, auto=False, sn=1)  # sm - watm light
+lights['bathroom'] = objects.NooLight(3, auto=False)
+lights['kitchen'] = objects.NooLight(2, auto=False)
 
 def now():
     return datetime.now()
@@ -75,24 +79,24 @@ def say(text):
 def on_motion(where, state):
     debug_print("Applicated motion in %s" % (where))
     if where == 'hole':
-        light_hole.motion_triger(state)
+        lights['hole'].motion_triger(state)
         if 'secureMode' in glob and glob['secureMode']:
             glob['secureMode'] = False
             wellcomeHome()
 
 def noolite_hole_set_auto():
     debug_print("Enable auto mode for Light in hole")
-    light_hole.set_auto(True)
+    lights['hole'].set_auto(True)
 
 def noolite_hole_set_on():
     debug_print("Disble auto mode for Light in hole and light ON")
-    light_hole.set_auto(False)
-    light_hole.on()
+    lights['hole'].set_auto(False)
+    lights['hole'].on()
 
 def noolite_hole_set_off():
     debug_print("Disble auto mode for Light in hole and light OFF")
-    light_hole.set_auto(False)
-    light_hole.off()
+    lights['hole'].set_auto(False)
+    lights['hole'].off()
 
 def cronAdd(name, when):
     debug_print("set to cron %s AT %s" % (name, when))
@@ -170,6 +174,19 @@ def dispatch_pub(data):
         elif args[0] == 'IR':
             if args[1] in IR_codes:
                 IR_codes[args[1]]()
+
+        elif args[0] == 'light':
+            room, cmd = args[1], args[2]
+            if room in lights:
+                debug_print('work with %s light' % (room))
+                if cmd == 'on':
+                    lights[room].on()
+                elif cmd == 'off':
+                    lights[room].off()
+                elif cmd == 'switch':
+                    lights[room].switch()
+                elif cmd == 'set':
+                    lights[room].set(args[3])
 
         elif args[0] == 'cron' and args[1] == 'event':
             env = args[2]

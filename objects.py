@@ -2,6 +2,7 @@ import noolite
 
 class NooLight:
     def __init__(self, ch, auto=False, sn=0):
+        # sn - warm light
         self._noolite = noolite.NooLite()
         self.auto = auto
         self.ch = ch
@@ -15,7 +16,12 @@ class NooLight:
         self._noolite.off(self.ch)
 
     def set(self, value):
-        self._noolite.set(self.ch)
+        if self.sn == 0:
+            return
+        self._noolite.set(self.ch, value)
+
+    def switch(self):
+        self._noolite.switch(self.ch)
 
     def set_auto(self, auto):
         if not isinstance(auto, bool):
