@@ -52,6 +52,7 @@ signal.signal(signal.SIGTERM, signal_handler)
 
 lights = dict()
 lights['hole'] = objects.NooLight(0, auto=False, sn=1)  # sm - watm light
+lights['room'] = objects.NooLight(1, auto=False, sn=1)  # sm - watm light
 lights['bathroom'] = objects.NooLight(3, auto=False)
 lights['kitchen'] = objects.NooLight(2, auto=False)
 
@@ -83,6 +84,9 @@ def on_motion(where, state):
         if 'secureMode' in glob and glob['secureMode']:
             glob['secureMode'] = False
             wellcomeHome()
+    elif where in lights:
+        debug_print("Applicated motion in %s" % (where))
+        lights[where].motion_triger(state)
 
 def noolite_hole_set_auto():
     debug_print("Enable auto mode for Light in hole")
@@ -187,6 +191,10 @@ def dispatch_pub(data):
                     lights[room].switch()
                 elif cmd == 'set':
                     lights[room].set(args[3])
+                elif cmd == 'auto':
+                    lights[room].set_auto(True)
+                elif cmd == 'noauto':
+                    lights[room].set_auto(False)
 
         elif args[0] == 'cron' and args[1] == 'event':
             env = args[2]
