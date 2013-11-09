@@ -109,7 +109,7 @@ def cronAdd(name, when):
 def say_temp():
     debug_print("Gonna say hole_ds_18b20")
     if 'hole_ds18b20' in glob:
-        say("Температура дома %f" % (glob['hole_ds18b20']))
+        say("Температура дома %f" % (float(glob['hole_ds18b20'])))
 
 
 def toSecureMode():
