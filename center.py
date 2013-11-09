@@ -34,7 +34,7 @@ if args.tests:                  # --tests
     REP_PORT=6001
     debug_print("DEBUG: Zmq replay port is changed on %i" % (REP_PORT))
 
-glob = dict()
+glob = { 'secureMode' : False }
 ultra = Ultra()
 context = zmq.Context()
 sub = context.socket(zmq.SUB)
@@ -77,16 +77,31 @@ def say(text):
     req.send(b"say %s" % (text))
     req.recv()
 
+def cronAdd(name, when):
+    debug_print("set to cron %s AT %s" % (name, when))
+    send(" ".join(["cron add", str(time.mktime(when.timetuple())), name]))
+
+def cronRm(name):
+    debug_print("Remove from cron %s" % (name))
+    send(" ".join(["cron rm", name]))
+
 def on_motion(where, state):
-    debug_print("Applicated motion in %s" % (where))
+    if where not in lights:
+        return
+    debug_print("Applicated motion in %s with state %s" % (where, state))
     if where == 'hole':
-        lights['hole'].motion_triger(state)
-        if 'secureMode' in glob and glob['secureMode']:
+        if glob['secureMode']:
             glob['secureMode'] = False
             wellcomeHome()
-    elif where in lights:
-        debug_print("Applicated motion in %s" % (where))
-        lights[where].motion_triger(state)
+    else:
+        if glob['secureMode'] and state == 1:
+            glob['secureMode'] = False
+            debug_print("Warning: wrong secure Mode (Motion isn't in hole")
+    lights[where].motion_triger(state)
+    if where == 'hole' and state == 0:
+        cronAdd('noBodyHome', now() + timedelta(minutes=20))
+    else:
+        cronRm('noBodyHome')
 
 def noolite_hole_set_auto():
     debug_print("Enable auto mode for Light in hole")
@@ -102,10 +117,6 @@ def noolite_hole_set_off():
     lights['hole'].set_auto(False)
     lights['hole'].off()
 
-def cronAdd(name, when):
-    debug_print("set to cron %s AT %s" % (name, when))
-    send(" ".join(["cron add", str(time.mktime(when.timetuple())), name]))
-
 def say_temp():
     debug_print("Gonna say hole_ds_18b20")
     if 'hole_ds18b20' in glob:
@@ -117,8 +128,11 @@ def toSecureMode():
     say('Сторожевой режим будет включен через одну минуту. Приятного время препровождения!')
 
 def secureMode():
+    if glob['secureMode']:
+        return
     glob['secureMode'] = True
     debug_print("Secure mode is enabled")
+    #say('Сторожевой режим включен.')
 
 def wellcomeHome():
     say("Добро пожаловать домой.")
@@ -200,7 +214,7 @@ def dispatch_pub(data):
         elif args[0] == 'cron' and args[1] == 'event':
             env = args[2]
             debug_print("Cron event " + env)
-            if env == 'toSecureMode':
+            if env in ('toSecureMode', 'noBodyHome'):
                 secureMode()
     except Exception  as e:
         traceback.print_exc(file=sys.stderr)
