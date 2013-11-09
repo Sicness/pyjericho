@@ -130,24 +130,25 @@ def wellcomeHome():
 IR_codes = dict()
 def init_IR_codes():
     """ Bind functions on IR codes """
-    IR_codes.update( {b'FF629D' : say_temp} )     # Say temperature status
+    IR_codes.update( {b'FF629D'   : say_temp} )     # Say temperature status
+    IR_codes.update( {b'84FF9375' : say_temp} )     # Say temperature status
     #IR_codes.update( {b'FFA857' : volume_inc} )   # increase volume
     #IR_codes.update( {b'FFE01F' : volume_dec} )   # reduce volume
-    IR_codes.update( {b'FF906F' : toSecureMode} )       # Will be noBodyHome
-    IR_codes.update( {b'FFC23D' : ultra.switch} )       # On/off radio
+    IR_codes.update( {b'FF906F'   : toSecureMode} )       # Will be noBodyHome
+    IR_codes.update( {b'FFC23D'   : ultra.switch} )       # On/off radio
     IR_codes.update( {b'BF09C35C' : ultra.switch} )     # On/off radio (big)
     #IR_codes.update( {b'8BE68656' : holeNightLightAuto} )
     #IR_codes.update( {b'B21F28AE' : hole_night_light.setManualStateOff} )
     #IR_codes.update( {b'A6B1096A' : hole_night_light.setManualStateOn} )
-    IR_codes.update( {b'24014B0' : noolite_hole_set_auto} )
-    IR_codes.update( {b'8FC212DB' : noolite_hole_set_off} )
-    IR_codes.update( {b'7960556F' : noolite_hole_set_on} )
+    IR_codes.update( {b'24014B0'  : noolite_hole_set_off} )
+    IR_codes.update( {b'8FC212DB' : noolite_hole_set_on} )
+    IR_codes.update( {b'7960556F' : noolite_hole_set_auto} )
     #IR_codes.update( {b'FF10EF' : holeNightLightAuto} )
     #IR_codes.update( {b'FF38C7' : hole_night_light.setManualStateOff} )
     #IR_codes.update( {b'FF5AA5' : hole_night_light.setManualStateOn} )
-    IR_codes.update( {b'FF30CF' : noolite_hole_set_auto} )
-    IR_codes.update( {b'FF18E7' : noolite_hole_set_off} )
-    IR_codes.update( {b'FF7A85' : noolite_hole_set_on} )
+    IR_codes.update( {b'FF30CF'  : noolite_hole_set_off} )
+    IR_codes.update( {b'FF18E7'  : noolite_hole_set_on} )
+    IR_codes.update( {b'FF7A85'  : noolite_hole_set_auto} )
 
 init_IR_codes()
 
