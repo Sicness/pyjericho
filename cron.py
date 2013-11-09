@@ -73,6 +73,7 @@ while True:
                 tasks[name] = when
             elif cmd == 'list':
                 debug_print("command 'list' recieved; Tasks:")
+                send('count %i' % (len(tasks)))
                 for i,j in tasks.iteritems():
                     send('has', "%s AT %s" % (i, j))
             elif cmd == 'rm' or cmd == 'del':
