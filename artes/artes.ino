@@ -14,6 +14,7 @@ void IRCheck();
 void MotionCheck();
 void OnMotionChenged();
 IRrecv irrecv(8);
+IRsend irsend;
 Adafruit_MPL115A2 mpl115a2;
 long mpl115a2_lastTime = 0;
 decode_results results;
@@ -41,6 +42,7 @@ void IRCheck();
 void setup()
 {
   Serial.begin(9600);
+  Serial.setTimeout(50);  // ms
   irrecv.enableIRIn();
   mpl115a2.begin();
 }
@@ -52,15 +54,69 @@ void loop()
   motionRoom.check();
   motionKitchen.check();
   mpl115a2Check();
+  serailRead();
+}
+
+void serailRead()
+{
+  String str;
+  if (Serial.available() > 0)  {
+    str = Serial.readString();
+    if ((str.charAt(0) == 'I') && (str.charAt(1) == 'R')) {  // IR
+      if (str.charAt(4) == 'F')  {  Serial.println("OFF"); irsend.sendNEC(0xF740BF, 32); } //OFF
+      if (str.charAt(4) == 'N')  { irsend.sendNEC(0xF7C03F, 32); Serial.println("ON"); }  //ON
+    }
+  }
 }
 
 void IRCheck()
 {
   if (irrecv.decode(&results))
   {
+      
     Serial.println(results.value, HEX);
+    dump(&results);
     irrecv.resume(); // Receive the next value 
   }
+}
+
+void dump(decode_results *results) {
+  int count = results->rawlen;
+  if (results->decode_type == UNKNOWN) {
+    Serial.println("Could not decode message");
+  } 
+  else {
+    if (results->decode_type == NEC) {
+      Serial.print("Decoded NEC: ");
+    } 
+    else if (results->decode_type == SONY) {
+      Serial.print("Decoded SONY: ");
+    } 
+    else if (results->decode_type == RC5) {
+      Serial.print("Decoded RC5: ");
+    } 
+    else if (results->decode_type == RC6) {
+      Serial.print("Decoded RC6: ");
+    }
+    Serial.print(results->value, HEX);
+    Serial.print(" (");
+    Serial.print(results->bits, DEC);
+    Serial.println(" bits)");
+  }
+  Serial.print("Raw (");
+  Serial.print(count, DEC);
+  Serial.print("): ");
+
+  for (int i = 0; i < count; i++) {
+    if ((i % 2) == 1) {
+      Serial.print(results->rawbuf[i]*USECPERTICK, DEC);
+    } 
+    else {
+      Serial.print(-(int)results->rawbuf[i]*USECPERTICK, DEC);
+    }
+    Serial.print(" ");
+  }
+  Serial.println("");
 }
 
 MotionSens::MotionSens(char* name, uint8_t pin)
