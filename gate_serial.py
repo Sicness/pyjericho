@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import zmq
-import serial
 import argparse
 import signal
 import urllib
 from time import sleep
 import sys
+
+from arduino import Arduino
 
 __debug = False
 QUEUE_PORT = 5000
@@ -43,52 +44,6 @@ sub.setsockopt(zmq.SUBSCRIBE,"ard")
 req = context.socket(zmq.REQ)
 req.connect("tcp://127.0.0.1:%i" % (REP_PORT))
 
-class Arduino:
-    def __init__(self, adr, onFound = None, onLost = None, baudrate = 9600):
-        self.adr = adr
-        self.baudrate =  baudrate
-        self.onFound = onFound
-        self.onLost  = onLost
-        self._connected = None
-        self.connect()
-
-    def connect(self):
-        while True:
-            try:
-                self.s = serial.Serial(self.adr, self.baudrate, timeout=2)
-            except:
-                if self._connected == True:
-                    debug_print("Loose connection with Serail %s:%s %s" % (self.adr, self.baudrate, sys.exc_info()[0]))
-                    if self.onLost != None:
-                        self.onLost()
-                elif self._connected == None:
-                    debug_print("Can't open seril port %s:%s %s" % (self.adr, self.baudrate, sys.exc_info()[0]))
-                self._connected = False
-                sleep(5)
-                continue
-
-            # Success conntect to serial
-            debug_print('Recconnectred to Serail %s:%s' % (self.adr, self.baudrate))
-            if self._connected == False:
-                if self.onFound != None:
-                    self.onFound()
-            self._connected = True
-            break
-
-    def read(self):
-        """ Read line from Serial with out \r\n """
-        while True:
-            try:
-                line = self.s.readline()
-                if not line:
-                    continue
-            except serial.SerialException:
-                debug_print("Can't read from serial: %s" % sys.exc_info()[0])
-                self.connect()
-                continue
-            break
-        return line[:-2]
-
 def onArdFound():
     req.send("msg arduino is found")
     req.recv()
@@ -98,10 +53,11 @@ def onArdLost():
     req.recv()
 
 ard = Arduino('/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A80090sP-if00-port0',
-              onFound=onArdFound, onLost=onArdLost)
+              onFound=onArdFound, onLost=onArdLost, debug=__debug)
 while True:
     try:
         debug_print("Arduino reading...")
+	ard.write("HELLO")
         data = ard.read()
         debug_print("Arduino read: %s" % (data))
         if data.split(' ')[0] == 'IR':
